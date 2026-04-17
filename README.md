@@ -1,12 +1,9 @@
-# 🐳 K8s & Docker in Action — IS216 Seminar Demo
+# K8s & Docker in Action — IS216 Seminar Demo
 
-![Java](https://img.shields.io/badge/Java-21-orange.svg)
-![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-brightgreen.svg)
-![Docker](https://img.shields.io/badge/Docker-Enabled-blue.svg)
-![Kubernetes](https://img.shields.io/badge/Kubernetes-Ready-blueviolet.svg)
+**Java 21 | Spring Boot 3 | Docker | Kubernetes**
 
-**Tác giả:** Nhóm Nần Ná Nân Na 
-**Học phần:** Lập trình Java (IS216) - Đại học Công nghệ Thông tin (UIT)
+**Tác giả:** Nhóm Nần Ná Nân Na  
+**Học phần:** Lập trình Java (IS216) - Đại học Công nghệ Thông tin
 
 ---
 ## 1. Giới thiệu
