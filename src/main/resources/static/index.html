@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>K8s Enterprise Order Management</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --btn-bg: #1E40AF;
+            --btn-hover: #1C3A9E;
+            --bg-body: #f8fafc;
+            --bg-card: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-light: #e2e8f0;
+            --border-strong: #cbd5e1;
+            --success: #10b981;
+            --success-bg: #d1fae5;
+            --danger: #ef4444;
+            --danger-bg: #fee2e2;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        .master-container {
+            background: transparent;
+            max-width: 1100px;
+            width: 100%;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        /* --- HEADER GRADIENT ĐẬM HƠN --- */
+        .server-banner {
+            background: linear-gradient(135deg, #1E40AF 0%, #0F2B6D 100%);
+            padding: 24px 32px;
+            border-radius: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        @media (max-width: 600px) {
+            .server-banner {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 16px;
+            }
+        }
+
+        .server-info {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .server-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #93c5fd;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .pod-name {
+            font-size: 24px;
+            font-weight: 800;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-container {
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(4px);
+            padding: 10px 18px;
+            border-radius: 40px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            font-size: 14px;
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .live-dot {
+            width: 10px;
+            height: 10px;
+            background-color: #34d399;
+            border-radius: 50%;
+            box-shadow: 0 0 0 0 #34d399;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(52, 211, 153, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(52, 211, 153, 0); }
+        }
+
+        /* --- BỐ CỤC LƯỚI TỈ LỆ 5:5 (1fr 1fr) --- */
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        @media (max-width: 850px) {
+            .grid-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: 20px;
+            padding: 28px;
+            box-shadow: 0 4px 10px -2px rgba(0, 0, 0, 0.03);
+        }
+
+        .section-header {
+            font-weight: 700;
+            font-size: 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 16px;
+            margin-bottom: 24px;
+            border-bottom: 1px solid var(--border-light);
+            color: var(--text-main);
+        }
+
+        /* --- FORM TỐI GIẢN --- */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        input {
+            width: 100%;
+            padding: 14px 16px;
+            border-radius: 12px;
+            border: 1px solid var(--border-strong);
+            background: #fafcff;
+            font-size: 15px;
+            outline: none;
+            transition: all 0.2s;
+            box-sizing: border-box;
+        }
+
+        input:focus {
+            border-color: #1E40AF;
+            box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+        }
+
+        /* NÚT GỬI ĐƠN MÀU #1E40AF */
+        button {
+            background: #1E40AF;
+            color: white;
+            border: none;
+            padding: 14px;
+            width: 100%;
+            font-size: 15px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        button:hover {
+            background: #1C3A9E;
+            transform: translateY(-1px);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-outline {
+            background: white;
+            color: var(--text-main);
+            border: 1px solid var(--border-strong);
+            width: auto;
+            padding: 8px 16px;
+            margin-bottom: 20px;
+            font-size: 13px;
+        }
+
+        .btn-outline:hover {
+            background: #f8fafc;
+            transform: none;
+        }
+
+        /* --- DANH SÁCH ĐƠN HÀNG --- */
+        .order-list {
+            max-height: 420px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .order-list::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .order-list::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+
+        .order-item {
+            background: #ffffff;
+            padding: 18px;
+            margin-bottom: 12px;
+            border-radius: 16px;
+            border: 1px solid var(--border-light);
+            border-left: 4px solid #1E40AF;
+            transition: all 0.15s;
+            animation: fadeIn 0.25s ease-out;
+        }
+
+        .order-item:hover {
+            border-color: var(--border-strong);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+        }
+
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .customer-name {
+            font-weight: 800;
+            font-size: 16px;
+            color: var(--text-main);
+        }
+
+        .status-badge {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--success);
+            background: var(--success-bg);
+            padding: 4px 12px;
+            border-radius: 20px;
+            text-transform: uppercase;
+        }
+
+        .item-detail {
+            font-size: 14px;
+            color: var(--text-main);
+            margin-bottom: 6px;
+        }
+
+        .item-detail strong {
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .item-id {
+            font-size: 12px;
+            font-family: monospace;
+            color: #94a3b8;
+            background: #f8fafc;
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 20px;
+        }
+
+        .version-badge {
+            background: #f1f5f9;
+            color: var(--text-muted);
+            font-size: 12px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 30px;
+            border: 1px solid var(--border-light);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(6px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="master-container">
+    <!-- HEADER GRADIENT ĐẬM HƠN -->
+    <div class="server-banner">
+        <div class="server-info">
+            <div class="server-title">Hệ thống đang xử lý bởi Pod</div>
+            <div class="pod-name" id="podName">
+                <i data-lucide="server" width="22" height="22"></i>
+                Connecting...
+            </div>
+        </div>
+        <div class="status-container">
+            <div class="live-dot" id="statusDot"></div>
+            <span id="statusText">Đồng bộ</span>
+        </div>
+    </div>
+
+    <div class="grid-layout">
+        <!-- PANEL ĐẶT MÓN -->
+        <div class="panel">
+            <div class="section-header">Đặt món mới</div>
+            <form id="orderForm">
+                <div class="form-group">
+                    <label>Tên khách hàng</label>
+                    <input type="text" id="customerInput" placeholder="Ví dụ: Thắng Pear" required autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label>Món ăn</label>
+                    <input type="text" id="itemInput" placeholder="Ví dụ: Bún bò Huế" required autocomplete="off">
+                </div>
+                <button type="submit" id="submitBtn">Gửi đơn lên hệ thống</button>
+            </form>
+        </div>
+
+        <!-- PANEL DANH SÁCH ĐƠN HÀNG -->
+        <div class="panel">
+            <div class="section-header">
+                Đơn hàng hiện tại
+                <span class="version-badge">v3.0</span>
+            </div>
+            <button onclick="loadOrders()" class="btn-outline">
+                <i data-lucide="refresh-cw" width="14" height="14"></i>
+                Đồng bộ
+            </button>
+            <div class="order-list" id="orderList">
+                <!-- danh sách sẽ hiển thị tại đây -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    lucide.createIcons();
+    const API_URL = '/api/orders';
+
+    async function loadOrders() {
+        try {
+            const response = await fetch(API_URL);
+            const res = await response.json();
+
+            // Cập nhật banner (trạng thái online)
+            const podElement = document.getElementById('podName');
+            podElement.innerHTML = `<i data-lucide="server" width="22" height="22"></i> ${res.pod_name || res.served_by_pod || 'k8s-node'}`;
+            
+            const statusDot = document.getElementById('statusDot');
+            const statusText = document.getElementById('statusText');
+            statusDot.style.backgroundColor = '#34d399';
+            statusText.innerText = 'Online';
+            statusText.style.color = '#ffffff';
+
+            // Hiển thị danh sách đơn hàng
+            const list = document.getElementById('orderList');
+            list.innerHTML = '';
+
+            if (res.data && res.data.length) {
+                [...res.data].reverse().forEach(item => {
+                    list.innerHTML += `
+                        <div class="order-item">
+                            <div class="item-header">
+                                <span class="customer-name">${escapeHtml(item.customer)}</span>
+                                <span class="status-badge">${escapeHtml(item.status || 'Active')}</span>
+                            </div>
+                            <div class="item-detail">Món: <strong>${escapeHtml(item.item)}</strong></div>
+                            <div class="item-id">#${escapeHtml(item.id)}</div>
+                        </div>
+                    `;
+                });
+            } else {
+                list.innerHTML = `<div style="text-align: center; padding: 30px; color: var(--text-muted);">Chưa có đơn hàng nào</div>`;
+            }
+
+            lucide.createIcons();
+        } catch (error) {
+            // Trạng thái offline
+            console.error(error);
+            const podElement = document.getElementById('podName');
+            podElement.innerHTML = `<i data-lucide="server-off" width="22" height="22"></i> OFFLINE`;
+            
+            const statusDot = document.getElementById('statusDot');
+            const statusText = document.getElementById('statusText');
+            statusDot.style.backgroundColor = '#ef4444';
+            statusText.innerText = 'Mất kết nối';
+            statusText.style.color = '#ffffff';
+
+            const list = document.getElementById('orderList');
+            list.innerHTML = `<div style="text-align: center; padding: 30px; color: #ef4444; background: #fee2e2; border-radius: 16px; font-weight: 500;">Không thể kết nối đến K8s API</div>`;
+        }
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str).replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    // Xử lý gửi đơn hàng
+    document.getElementById('orderForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('submitBtn');
+        const customer = document.getElementById('customerInput').value.trim();
+        const item = document.getElementById('itemInput').value.trim();
+
+        if (!customer || !item) {
+            alert("Vui lòng nhập đầy đủ thông tin");
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerHTML = `<i data-lucide="loader-2" class="spin-icon"></i> Đang xử lý...`;
+        lucide.createIcons();
+
+        try {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ customer, item, status: "Active" })
+            });
+
+            if (response.ok) {
+                document.getElementById('orderForm').reset();
+                await loadOrders();
+            } else {
+                alert(`Lỗi server: ${response.status}`);
+            }
+        } catch (err) {
+            alert("Lỗi kết nối tới backend K8s");
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = "Gửi đơn lên hệ thống";
+        }
+    });
+
+    // CSS cho icon xoay
+    const styleSpin = document.createElement('style');
+    styleSpin.innerHTML = `
+        .spin-icon {
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    `;
+    document.head.appendChild(styleSpin);
+
+    setInterval(loadOrders, 5000);
+    loadOrders();
+</script>
+</body>
+</html>

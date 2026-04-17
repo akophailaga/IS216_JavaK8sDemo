@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevOps K8s Dynamic UI</title>
+    <style>
+        body { background-color: #1a1b26; color: #a9b1d6; font-family: 'Segoe UI', Tahoma, sans-serif; display: flex; justify-content: center; padding: 40px 20px; margin: 0; }
+        .container { background: #24283b; padding: 30px; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.6); max-width: 800px; width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        @media (max-width: 768px) { .container { grid-template-columns: 1fr; } }
+        h2 { color: #7aa2f7; margin-top: 0; border-bottom: 2px solid #414868; padding-bottom: 10px; }
+
+        .server-panel { grid-column: 1 / -1; background: #414868; padding: 20px; border-radius: 10px; border: 1px solid #7dcfff; text-align: center; }
+        .pod-name { font-size: 28px; color: #bb9af7; font-weight: bold; margin-top: 10px; font-family: monospace; }
+
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; color: #9aa5ce; font-size: 14px; }
+        input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #414868; background: #1a1b26; color: #c0caf5; box-sizing: border-box; font-size: 16px; outline: none; transition: 0.3s; }
+        input:focus { border-color: #7aa2f7; box-shadow: 0 0 10px rgba(122, 162, 247, 0.3); }
+        button { background: #7aa2f7; color: #1a1b26; border: none; padding: 12px; width: 100%; font-size: 16px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; margin-top: 10px; }
+        button:hover { background: #7dcfff; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(125, 207, 255, 0.3); }
+        button:disabled { background: #414868; color: #9aa5ce; cursor: not-allowed; transform: none; }
+
+        .order-list { max-height: 400px; overflow-y: auto; padding-right: 5px; }
+        .order-list::-webkit-scrollbar { width: 6px; }
+        .order-list::-webkit-scrollbar-thumb { background: #414868; border-radius: 10px; }
+        .order-item { background: #1a1b26; padding: 15px; margin-bottom: 10px; border-radius: 8px; border-left: 4px solid #9ece6a; animation: slideIn 0.3s ease-out; }
+        .customer-name { color: #e0af68; font-weight: bold; }
+        .status-badge { color: #f7768e; float: right; font-size: 13px; font-style: italic; background: #24283b; padding: 3px 8px; border-radius: 12px; }
+
+        .toast { position: fixed; bottom: 30px; right: 30px; background: #9ece6a; color: #1a1b26; padding: 15px 25px; border-radius: 8px; font-weight: bold; box-shadow: 0 5px 15px rgba(0,0,0,0.3); transform: translateX(200%); transition: 0.3s; z-index: 1000; }
+        .toast.show { transform: translateX(0); }
+
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="server-panel">
+        <div style="font-size: 14px; color: #9aa5ce;">🛠️ HỆ THỐNG ĐANG ĐƯỢC XỬ LÝ BỞI NODE:</div>
+        <div class="pod-name" id="podName">Loading...</div>
+    </div>
+
+    <div class="form-section">
+        <h2>📝 Đặt Món Mới</h2>
+        <form id="orderForm">
+            <div class="form-group">
+                <label>Tên Khách Hàng</label>
+                <input type="text" id="customerInput" placeholder="VD: Thắng Pear..." required>
+            </div>
+            <div class="form-group">
+                <label>Món Ăn</label>
+                <input type="text" id="itemInput" placeholder="VD: Bún Bò Huế..." required>
+            </div>
+            <button type="submit" id="submitBtn">🚀 Gửi Đơn Vào Hệ Thống</button>
+        </form>
+    </div>
+
+    <div class="list-section">
+        <h2>📋 Đơn Hàng Hiện Tại</h2>
+        <button onclick="loadOrders()" style="background: #414868; color: #c0caf5; margin-top: 0; margin-bottom: 15px;">🔄 Làm Mới Dữ Liệu</button>
+        <div class="order-list" id="orderList">
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toastMsg">Thành công!</div>
+
+<script>
+    const API_URL = '/api/orders';
+
+    // 1. Hàm Load Dữ Liệu
+    async function loadOrders() {
+        try {
+            const response = await fetch(API_URL);
+            const data = await response.json();
+
+            document.getElementById('podName').innerText = data.pod_name;
+
+            const list = document.getElementById('orderList');
+            list.innerHTML = ''; // Clear list cũ
+
+            data.data.reverse().forEach(order => {
+                list.innerHTML += `
+                        <div class="order-item">
+                            <span class="customer-name">👤 ${order.customer}</span>
+                            <span class="status-badge">${order.status}</span>
+                            <div style="margin-top: 8px; color: #c0caf5;">🏷️ Món ăn: ${order.item}</div>
+                            <div style="margin-top: 5px; color: #565f89; font-size: 12px;">ID: ${order.id}</div>
+                        </div>`;
+            });
+        } catch (error) {
+            document.getElementById('podName').innerText = "MẤT KẾT NỐI SERVER";
+            document.getElementById('podName').style.color = "#f7768e";
+        }
+    }
+
+    document.getElementById('orderForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const btn = document.getElementById('submitBtn');
+        const customer = document.getElementById('customerInput').value;
+        const item = document.getElementById('itemInput').value;
+
+        btn.disabled = true;
+        btn.innerText = "⏳ Đang xử lý...";
+
+        try {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ customer: customer, item: item, id: "", status: "" })
+            });
+
+            if (response.ok) {
+                showToast("🎉 Đã lưu đơn hàng thành công!");
+                document.getElementById('orderForm').reset();
+                await loadOrders();
+            }
+        } catch (error) {
+            showToast("❌ Lỗi mạng, vui lòng thử lại!", true);
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "🚀 Gửi Đơn Vào Hệ Thống";
+        }
+    });
+
+    function showToast(msg, isError = false) {
+        const toast = document.getElementById('toastMsg');
+        toast.innerText = msg;
+        toast.style.background = isError ? "#f7768e" : "#9ece6a";
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    loadOrders();
+</script>
+</body>
+</html>
