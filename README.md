@@ -49,15 +49,14 @@ Project này là bài demo cho seminar môn IS216, minh họa phương pháp tri
 * **Docker Desktop** (hoặc Docker Engine): Đã bật tính năng **Kubernetes** trong cài đặt (Settings > Kubernetes > Enable Kubernetes), hoặc sử dụng **Minikube**.
 * **kubectl**: Công cụ dòng lệnh để giao tiếp với Kubernetes cluster.
 * *(Tùy chọn)* **Java 21 & Maven**: Nếu bạn muốn chỉnh sửa code và chạy thử ở môi trường local trước khi đóng gói.
-```
-
 ---
 
 ## 4. Hướng dẫn Thiết lập & Triển khai (Setup & Deployment)
 
 ### Bước 1: Clone Repository
 Mở Terminal/Command Prompt và chạy lệnh sau để tải source code về máy:
-```bash
+bash
+```
 git clone https://github.com/akophailaga/IS216_JavaK8sDemo.git
 cd DEMO
 ```
